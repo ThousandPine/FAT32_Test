@@ -3,8 +3,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-
-#include "bpb.h"
+#include "fs.h"
 
 #define debug(x) printf("debug::%s: 0x%x\n", #x,(x));
 
@@ -20,7 +19,7 @@ int main()
     }
 
     fat_init_fat32_info(fd, &fat);
-
+    debug(sizeof(struct fat_boot_sector));
     debug(fat.sector_size);
     debug(fat.sec_per_clus);
     debug(fat.fat_sec);
