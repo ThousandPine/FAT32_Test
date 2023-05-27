@@ -1,29 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-// #include <fcntl.h>
-
 #include "bpb.h"
-
-/*
- * 读取从起始位置偏移指定n字节后的内容
- */
-static void fd_read(int fd, __off_t offset, void *buffer, size_t bytes)
-{
-    /* 设定偏移 */
-    if (lseek(fd, offset, SEEK_SET) == -1)
-    {
-        perror("fd_read: lseek");
-        exit(1);
-    }
-    /* 读取内容 */
-    if (read(fd, buffer, bytes) == -1) {
-        perror("fd_read: read");
-        exit(1);
-    }
-}
-
-#define FD_READ(fd, offset, buff) fd_read(fd, offset, &(buff), sizeof(buff))
+#include "io.h"
 
 /*
  * 从磁盘中读取BPB
@@ -36,7 +12,6 @@ static void fat_read_bpb(int fd, struct bios_param_block *bpb)
     FD_READ(fd, 0x10, bpb->fats);
     FD_READ(fd, 0x24, bpb->fat32_fat_size);
     FD_READ(fd, 0x2c, bpb->fat32_root_cluster);
-    // FD_READ(fd, , bpb);
 }
 
 /* 
