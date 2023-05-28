@@ -2,6 +2,4 @@
 
 tests
 .vscode
-docs/data.txt
-docs/doc.md
-docs/Report.md
+docs/*
