@@ -7,6 +7,17 @@
 
 using namespace std;
 
+string ascii_to_usc2(const string& s)
+{
+    string res{};
+    for(int i = 0; i < s.size(); i++)
+    {
+        res.push_back(s[i]);
+        res.push_back(0x00);
+    }
+    return res;
+}
+
 int main()
 {
     string par = "sda3";
@@ -17,12 +28,35 @@ int main()
 
     std::cout << fat.to_string() << std::endl;
 
-    cout << fat.list() << endl;
-    // int i = 0;
-    // auto &&dirs = fat.open_root();
-    // cout << "root_dir::" << endl;
-    // for (auto &dir : dirs)
-    // {
-    //     cout << i++ << "::" << dir.to_string() << endl;
-    // }
+    while (1)
+    {
+        string cmd, res{};
+        cout << "[" << par << "@FAT32 " << fat.pwd() << "]";
+        getline(cin, cmd);
+
+        if (cmd.substr(0, 2) == "ls")
+        {
+            res = fat.list();
+        }
+        else if (cmd.substr(0, 2) == "cd")
+        {
+            // res = to_string(cmd.find_first_of(' '));
+            // res = cmd.substr(cmd.find_first_of(' ') + 1);
+            string path = cmd.substr(1 + cmd.find_first_of(' '));
+            if(false == fat.change_dir(ascii_to_usc2(path)))
+            {
+                res = "Faild to open path \"" + path + "\"";
+            }
+        }
+        else if (cmd == "pwd")
+        {
+            res = fat.pwd();
+        }
+        else
+        {
+            res = "Unknow cmd " + cmd;
+        }
+        if (res.size())
+            cout << res << endl;
+    }
 }

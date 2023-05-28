@@ -53,7 +53,8 @@ public:
 
     std::string to_string();
     std::string list();
-    void change_dir(std::string path);
+    std::string pwd();
+    bool change_dir(std::string path);
 
 private:
     int _fd; /* 分区文件描述符 */
@@ -71,5 +72,6 @@ private:
 
     off_t _get_byte_offset(u32 clus);
     std::pair<dir, off_t> _read_dir(off_t begin, off_t end);
-    std::vector<dir> _get_dirs(u32 clus);
+    void _switch_to_dir(u32 clus);
+    bool _open_sub_dir(std::string dir_name);
 };

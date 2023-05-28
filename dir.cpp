@@ -3,19 +3,19 @@
 #include "dir.h"
 #include "debug.h"
 
-bool dir::is_lfn(u8 attr)
+bool dir::IS_LFN(u8 attr)
 {
     return (attr == ATTR_LONG_NAME);
 }
-bool dir::is_last_entry(lfn_entry &entry)
+bool dir::IS_LAST_ENTRY(lfn_entry &entry)
 {
     return entry.ord == 0x00;
 }
-bool dir::is_valid(dir_entry &entry)
+bool dir::IS_VALID(dir_entry &entry)
 {
     return entry.name[0] != 0xe5 && entry.name[0] != 0x00;
 }
-bool dir::is_valid(lfn_entry &entry)
+bool dir::IS_VALID(lfn_entry &entry)
 {
     return entry.ord != 0xe5 && entry.ord != 0x00;
 }
@@ -74,13 +74,15 @@ dir::dir(std::stack<lfn_entry> &lfn_entries, dir_entry &dir_entry)
     _short_name.insert(8, ".");
     while (1)
     {
-        int i = _short_name.find_first_of('.') - 1;
+        int i = _short_name.find_last_of('.') - 1;
         if (_short_name[i] == ' ')
             _short_name.erase(i, 1);
         else
             break;
     }
-    while (_short_name.back() == ' ' || _short_name.back() == '.')
+    while (_short_name.back() == ' ')
+        _short_name.pop_back();
+    if(_short_name.back() == '.')
         _short_name.pop_back();
 
     if (!has_lfn)
@@ -96,17 +98,23 @@ dir::dir(std::stack<lfn_entry> &lfn_entries, dir_entry &dir_entry)
     /*
      * 其他参数
      */
+    this->_attr = dir_entry.attr;
+    this->_fst_clus = dir_entry.fst_clus_lo | (((u32)dir_entry.fst_clus_hi) << 16);
 }
 
 /* ============================================ */
 
 bool dir::valid() { return !_err; }
+bool dir::is_dir() { return 0 != (_attr & ATTR_DIRECTORY); }
+bool dir::is_arc() { return 0 != (_attr & ATTR_ARCHIVE); }
+
+u32 dir::clus() { return _fst_clus; }
+std::string dir::name() { return _name; }
 
 std::string dir::to_string()
 {
-    std::string s = _name + "(" + _short_name + ")";
-    if(_err)
+    std::string s = _name + "(" + _short_name + ")" + std::to_string(_fst_clus);
+    if (_err)
         s.append(_err_msg);
     return s;
-    // return _name;
 }

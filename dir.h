@@ -57,15 +57,19 @@ public:
     static const u32 ENTRY_SZIE = 32;
     static const u8 LAST_LONG_ENTRY = 0x40;
 
-    static bool is_lfn(u8 attr);
-    static bool is_valid(dir_entry &entry);
-    static bool is_valid(lfn_entry &entry);
-    static bool is_last_entry(lfn_entry &entry);
+    static bool IS_LFN(u8 attr);
+    static bool IS_VALID(dir_entry &entry);
+    static bool IS_VALID(lfn_entry &entry);
+    static bool IS_LAST_ENTRY(lfn_entry &entry);
 
     dir();
     dir(std::stack<lfn_entry> &lfn_entries, dir_entry &dir_entry);
 
     bool valid();
+    bool is_dir();
+    bool is_arc();
+    u32 clus();
+    std::string name();
     std::string to_string();
 
 private:

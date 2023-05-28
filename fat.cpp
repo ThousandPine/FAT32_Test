@@ -21,9 +21,8 @@ fat32::fat32(std::string par)
     this->_data_fst_sec = this->_fat_fst_sec + (bs.num_fats * bs.sec_per_fat32);
     this->_root_fst_sec = this->_data_fst_sec + (bs.root_clus - 2) * bs.sec_per_clus;
 
-    this->_cur_clus = bs.root_clus;
     this->_cur_path = "/";
-    this->_dirs = _get_dirs(this->_cur_clus);
+    _switch_to_dir(this->_root_fst_clus);
 }
 
 /* ======================================================================= */
@@ -74,20 +73,20 @@ std::pair<dir, off_t> fat32::_read_dir(off_t off_begin, off_t off_end)
      * 跳过无效的条目
      */
     fd_read(_fd, off_begin, lfn_entry);
-    while (off_begin < off_end && !dir::is_valid(lfn_entry) && !dir::is_last_entry(lfn_entry))
+    while (off_begin < off_end && !dir::IS_VALID(lfn_entry) && !dir::IS_LAST_ENTRY(lfn_entry))
     {
         off_begin += dir::ENTRY_SZIE;
         fd_read(_fd, off_begin, lfn_entry);
     }
 
-    if (off_begin >= off_end || dir::is_last_entry(lfn_entry))
+    if (off_begin >= off_end || dir::IS_LAST_ENTRY(lfn_entry))
         return {{}, off_end};
 
     /*
      * 读取目录信息
      */
     /* LFN */
-    while (off_begin < off_end && dir::is_lfn(lfn_entry.attr))
+    while (off_begin < off_end && dir::IS_LFN(lfn_entry.attr))
     {
         lfn_entries.push(lfn_entry);
         off_begin += dir::ENTRY_SZIE;
@@ -100,11 +99,13 @@ std::pair<dir, off_t> fat32::_read_dir(off_t off_begin, off_t off_end)
 }
 
 /*
- * 读取簇号内的所有目录信息
+ * 切换到指定簇下的目录
  */
-std::vector<dir> fat32::_get_dirs(u32 clus)
+void fat32::_switch_to_dir(u32 clus)
 {
-    std::vector<dir> dirs{};
+    this->_cur_clus = clus;
+    this->_dirs.clear();
+
     off_t off_begin = _get_byte_offset(clus);
     off_t off_end = _get_byte_offset(clus + 1);
 
@@ -113,22 +114,50 @@ std::vector<dir> fat32::_get_dirs(u32 clus)
         auto &&res = _read_dir(off_begin, off_end);
         off_begin = res.second;
         if (res.first.valid())
-            dirs.emplace_back(res.first);
+            _dirs.emplace_back(res.first);
     }
-    return dirs;
+    return;
 }
+
+/*
+ * 打开当前目录下的子目录
+ */
+bool fat32::_open_sub_dir(std::string name)
+{
+    bool result = false;
+
+    for (auto &dir : _dirs)
+    {
+        if (dir.name() == name)
+        {
+            if (dir.is_dir())
+            {
+                _switch_to_dir(dir.clus());
+                this->_cur_path.append(name);
+                result = true;
+            }
+            break;
+        }
+    }
+
+    return result;
+}
+
+/* ======================================================================= */
+
+std::string fat32::pwd() { return _cur_path; }
 
 std::string fat32::list()
 {
     std::string s{};
-    for(auto &dir : _dirs)
+    for (auto &dir : _dirs)
     {
         s += dir.to_string() + '\n';
     }
     return s;
 }
 
-void fat32::change_dir(std::string path)
+bool fat32::change_dir(std::string path)
 {
-
+    return _open_sub_dir(path);
 }
