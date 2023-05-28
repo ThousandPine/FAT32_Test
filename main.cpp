@@ -17,11 +17,12 @@ int main()
 
     std::cout << fat.to_string() << std::endl;
 
-    int i = 0;
-    auto &&dirs = fat.open_root();
-    cout << "root_dir::" << endl;
-    for (auto &dir : dirs)
-    {
-        cout << i++ << "::" << dir.to_string() << endl;
-    }
+    cout << fat.list() << endl;
+    // int i = 0;
+    // auto &&dirs = fat.open_root();
+    // cout << "root_dir::" << endl;
+    // for (auto &dir : dirs)
+    // {
+    //     cout << i++ << "::" << dir.to_string() << endl;
+    // }
 }

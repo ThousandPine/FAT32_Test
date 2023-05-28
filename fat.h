@@ -51,17 +51,9 @@ class fat32
 public:
     fat32(std::string par);
 
-    /*
-     * 返回分区信息
-     */
     std::string to_string();
-
-    /*
-     * 打开文件夹并返回信息
-     */
-    std::vector<dir> open_dir(std::string dir);
-
-    std::vector<dir> open_root();
+    std::string list();
+    void change_dir(std::string path);
 
 private:
     int _fd; /* 分区文件描述符 */
@@ -73,7 +65,11 @@ private:
     u32 _root_fst_sec;  /* 根目录起始扇区号 */
     u32 _root_fst_clus; /* 根目录起始簇号 */
 
+    std::string _cur_path;  /* 当前路径字符串 */
+    u32 _cur_clus;          /* 当前目录所在簇号 */
+    std::vector<dir> _dirs; /* 目录下的文件信息 */
+
     off_t _get_byte_offset(u32 clus);
     std::pair<dir, off_t> _read_dir(off_t begin, off_t end);
-    std::vector<dir> _read_all_dir(u32 clus);
+    std::vector<dir> _get_dirs(u32 clus);
 };
