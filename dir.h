@@ -60,6 +60,7 @@ public:
     static bool is_lfn(u8 attr);
     static bool is_valid(dir_entry &entry);
     static bool is_valid(lfn_entry &entry);
+    static bool is_last_entry(lfn_entry &entry);
 
     dir();
     dir(std::stack<lfn_entry> &lfn_entries, dir_entry &dir_entry);

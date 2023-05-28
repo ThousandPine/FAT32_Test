@@ -7,6 +7,10 @@ bool dir::is_lfn(u8 attr)
 {
     return (attr == ATTR_LONG_NAME);
 }
+bool dir::is_last_entry(lfn_entry &entry)
+{
+    return entry.ord == 0x00;
+}
 bool dir::is_valid(dir_entry &entry)
 {
     return entry.name[0] != 0xe5 && entry.name[0] != 0x00;

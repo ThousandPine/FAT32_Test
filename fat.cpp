@@ -70,14 +70,14 @@ std::pair<dir, off_t> fat32::_read_dir(off_t off_begin, off_t off_end)
      * 跳过无效的条目
      */
     fd_read(_fd, off_begin, lfn_entry);
-    while (off_begin < off_end && !dir::is_valid(lfn_entry))
+    while (off_begin < off_end && !dir::is_valid(lfn_entry) && !dir::is_last_entry(lfn_entry))
     {
         off_begin += dir::ENTRY_SZIE;
         fd_read(_fd, off_begin, lfn_entry);
     }
 
-    if (off_begin >= off_end)
-        return {{}, off_begin};
+    if (off_begin >= off_end || dir::is_last_entry(lfn_entry))
+        return {{}, off_end};
 
     /*
      * 读取目录信息
