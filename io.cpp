@@ -6,7 +6,7 @@
 /*
  * 以读写方式打开并返回文件描述符
  */
-int fd_open_rw(char *dir)
+int fd_open_rw(const char *dir)
 {
     int fd = open(dir, O_RDWR);
     if (fd == -1) {

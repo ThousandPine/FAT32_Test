@@ -9,8 +9,14 @@ using namespace std;
 
 int main()
 {
-    int fd;
     fat32 fat("/dev/sda3");
     
     std::cout << fat.to_string() << std::endl;
+
+    auto &&dirs = fat.open_root();
+    cout << "root_dir::" << endl;
+    for(auto &dir : dirs)
+    {
+        cout << dir.to_string() << endl;
+    }
 }

@@ -5,7 +5,7 @@
 /*
  * 以读写方式打开并返回文件描述符
  */
-int fd_open_rw(char *dir);
+int fd_open_rw(const char *dir);
 
 /*
  * 将从起始位置偏移指定n字节后的内容写入buffer

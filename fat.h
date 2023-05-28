@@ -1,8 +1,10 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "types.h"
+#include "dir.h"
 
 /*
  * FAT32引导扇区信息
@@ -47,9 +49,19 @@ struct fat_boot_sector
 class fat32
 {
 public:
-    fat32(char *par);
+    fat32(std::string par);
 
+    /*
+     * 返回分区信息
+     */
     std::string to_string();
+
+    /*
+     * 打开文件夹并返回信息
+     */
+    std::vector<dir> open_dir(std::string dir);
+
+    std::vector<dir> open_root();
 
 private:
     int _fd; /* 分区文件描述符 */
@@ -59,11 +71,11 @@ private:
     u32 _fat_fst_sec;  /* FAT表起始扇区号 */
     u32 _data_fst_sec; /* 数据区起始扇区号 */
     u32 _root_fst_sec; /* 根目录起始扇区号 */
+    u32 _root_fst_clus; /* 根目录起始簇号 */
+
+    off_t _get_byte_offset(u32 clus);
+    std::pair<dir, u32> _read_dir(off_t begin, off_t end);
+    std::vector<dir> _read_all_dir(u32 clus);
+
 };
 
-/*
- * 目录信息
- */
-class dir_info {
-
-};
