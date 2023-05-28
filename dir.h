@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <vector>
+#include <stack>
 
 #include "types.h"
 
@@ -62,12 +62,15 @@ public:
     static bool is_valid(lfn_entry &entry);
 
     dir() = default;
-    dir(std::vector<lfn_entry> &lfn_entries, dir_entry &dir_entry);
+    dir(std::stack<lfn_entry> &lfn_entries, dir_entry &dir_entry);
 
     std::string to_string();
 
 private:
     std::string _name;
+    std::string _short_name;
     u8 _attr;
-    u32 _clus;
+    u32 _fst_clus;
+    bool _err = false;
+    std::string _err_msg = "";
 };

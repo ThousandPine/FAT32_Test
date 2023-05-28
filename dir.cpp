@@ -31,18 +31,66 @@ static u8 lfn_checksum(const u8 *name)
 
 /* ============================================ */
 
-dir::dir(std::vector<lfn_entry> &lfn_entries, dir_entry &dir_entry)
+dir::dir(std::stack<lfn_entry> &lfn_entries, dir_entry &dir_entry)
 {
-    _name = "";
-    for(int i = 0; i < 11; i++)
+    /*
+     * 设置文件名
+     */
+    u8 checksum;
+    bool has_lfn = !lfn_entries.empty();
+    /* LFN */
+    _name.clear();
+    while (lfn_entries.size())
     {
-        _name.push_back(dir_entry.name[i]);
+        auto &lfn = lfn_entries.top();
+        checksum = lfn.chk_sum;
+        _name.append((const char *)lfn.name1, 10);
+        _name.append((const char *)lfn.name2, 12);
+        _name.append((const char *)lfn.name3, 4);
+        lfn_entries.pop();
     }
+    for (int i = 0; i < _name.size(); i += 2)
+    {
+        if (_name[i] == 0x00)
+        {
+            _name = _name.substr(0, i);
+            break;
+        }
+    }
+    /* 8.3文件名 */
+    _short_name.clear();
+    _short_name.append((const char *)dir_entry.name, 11);
+    _short_name.insert(8, ".");
+    while (1)
+    {
+        int i = _short_name.find_first_of('.') - 1;
+        if (_short_name[i] == ' ')
+            _short_name.erase(i, 1);
+        else
+            break;
+    }
+    while(_short_name.back() == ' ' || _short_name.back() == '.')
+        _short_name.pop_back();
+
+    if (!has_lfn)
+        _name = _short_name;
+
+    /* 文件名检验和 */
+    if (has_lfn && checksum != lfn_checksum(dir_entry.name))
+    {
+        _err = true;
+        _err_msg.append("LFN校验和检测出错\n");
+    }
+
+    /*
+     * 其他参数
+     */
 }
 
 /* ============================================ */
 
 std::string dir::to_string()
 {
-    return _name;
+    return _name + "(" + _short_name + ")";
+    // return _name;
 }

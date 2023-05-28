@@ -64,18 +64,18 @@ std::pair<dir, u32> fat32::_read_dir(off_t off_begin, off_t off_end)
     if (off_begin >= off_end)
         return {{}, 0};
 
-    std::vector<lfn_entry> lfn_entries{};
+    std::stack<lfn_entry> lfn_entries{};
     dir_entry dir_entry;
     lfn_entry lfn_entry;
 
     /*
      * 跳过无效的条目
      */
-    fd_read(_fd, off_begin, dir_entry);
-    while (off_begin < off_end && !dir::is_valid(dir_entry))
+    fd_read(_fd, off_begin, lfn_entry);
+    while (off_begin < off_end && !dir::is_valid(lfn_entry))
     {
         off_begin += dir::ENTRY_SZIE;
-        fd_read(_fd, off_begin, dir_entry);
+        fd_read(_fd, off_begin, lfn_entry);
     }
 
     if (off_begin >= off_end)
@@ -85,17 +85,18 @@ std::pair<dir, u32> fat32::_read_dir(off_t off_begin, off_t off_end)
      * 读取目录信息
      */
     /* LFN */
-    fd_read(_fd, off_begin, lfn_entry);
     while (off_begin < off_end && dir::is_lfn(lfn_entry.attr))
     {
-        lfn_entries.emplace_back(lfn_entry);
+        lfn_entries.push(lfn_entry);
         off_begin += dir::ENTRY_SZIE;
         fd_read(_fd, off_begin, lfn_entry);
     }
     /* DIR */
     fd_read(_fd, off_begin, dir_entry);
 
-    return {{lfn_entries, dir_entry}, 1 + lfn_entries.size()};
+    u32 cnt = 1 + lfn_entries.size();   /* 必须提取计算好，如果在构造块里计算的话只能得到1
+                                        NewBing表示这是因为，lfn_entries在构造块中计算前已经被销毁，导致size为0 */
+    return {{lfn_entries, dir_entry}, cnt};
 }
 
 /*

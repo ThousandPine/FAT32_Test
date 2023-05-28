@@ -9,18 +9,19 @@ using namespace std;
 
 int main()
 {
-    string par;
-    cout << "输入FAT32分区名(例如sda1):";
-    cin >> par;
+    string par = "sda3";
+    // cout << "输入FAT32分区名(例如sda1):";
+    // cin >> par;
 
     fat32 fat("/dev/" + par);
-    
+
     std::cout << fat.to_string() << std::endl;
 
+    int i = 0;
     auto &&dirs = fat.open_root();
     cout << "root_dir::" << endl;
-    for(auto &dir : dirs)
+    for (auto &dir : dirs)
     {
-        cout << dir.to_string() << endl;
+        cout << i++ << "::" << dir.to_string() << endl;
     }
 }
