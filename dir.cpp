@@ -1,10 +1,11 @@
 
 #include "types.h"
 #include "dir.h"
+#include "debug.h"
 
 bool dir::is_lfn(u8 attr)
 {
-    return (attr & ATTR_LONG_NAME) != 0;
+    return (attr == ATTR_LONG_NAME);
 }
 bool dir::is_valid(dir_entry &entry)
 {
@@ -30,6 +31,12 @@ static u8 lfn_checksum(const u8 *name)
 }
 
 /* ============================================ */
+
+dir::dir()
+{
+    _err = true;
+    _err_msg.append("WARNING::数据为空");
+}
 
 dir::dir(std::stack<lfn_entry> &lfn_entries, dir_entry &dir_entry)
 {
@@ -69,7 +76,7 @@ dir::dir(std::stack<lfn_entry> &lfn_entries, dir_entry &dir_entry)
         else
             break;
     }
-    while(_short_name.back() == ' ' || _short_name.back() == '.')
+    while (_short_name.back() == ' ' || _short_name.back() == '.')
         _short_name.pop_back();
 
     if (!has_lfn)
@@ -79,7 +86,7 @@ dir::dir(std::stack<lfn_entry> &lfn_entries, dir_entry &dir_entry)
     if (has_lfn && checksum != lfn_checksum(dir_entry.name))
     {
         _err = true;
-        _err_msg.append("LFN校验和检测出错\n");
+        _err_msg.append("WARNING::LFN校验和检测出错");
     }
 
     /*
@@ -89,8 +96,13 @@ dir::dir(std::stack<lfn_entry> &lfn_entries, dir_entry &dir_entry)
 
 /* ============================================ */
 
+bool dir::valid() { return !_err; }
+
 std::string dir::to_string()
 {
-    return _name + "(" + _short_name + ")";
+    std::string s = _name + "(" + _short_name + ")";
+    if(_err)
+        s.append(_err_msg);
+    return s;
     // return _name;
 }

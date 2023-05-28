@@ -61,9 +61,10 @@ public:
     static bool is_valid(dir_entry &entry);
     static bool is_valid(lfn_entry &entry);
 
-    dir() = default;
+    dir();
     dir(std::stack<lfn_entry> &lfn_entries, dir_entry &dir_entry);
 
+    bool valid();
     std::string to_string();
 
 private:

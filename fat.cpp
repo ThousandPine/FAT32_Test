@@ -2,6 +2,7 @@
 
 #include "fat.h"
 #include "io.h"
+#include "debug.h"
 
 /*
  * 根据分区信息进行初始化
@@ -56,14 +57,11 @@ off_t fat32::_get_byte_offset(u32 clus)
 
 /*
  * 读取单个目录信息
- * 返回目录信息和包含的条目
- * 条目为0时表示未读取到信息
+ * 返回目录信息和下一目录偏移位置
  */
-std::pair<dir, u32> fat32::_read_dir(off_t off_begin, off_t off_end)
+std::pair<dir, off_t> fat32::_read_dir(off_t off_begin, off_t off_end)
 {
-    if (off_begin >= off_end)
-        return {{}, 0};
-
+    u32 entries_cnt = 0;
     std::stack<lfn_entry> lfn_entries{};
     dir_entry dir_entry;
     lfn_entry lfn_entry;
@@ -79,7 +77,7 @@ std::pair<dir, u32> fat32::_read_dir(off_t off_begin, off_t off_end)
     }
 
     if (off_begin >= off_end)
-        return {{}, 0};
+        return {{}, off_begin};
 
     /*
      * 读取目录信息
@@ -94,9 +92,7 @@ std::pair<dir, u32> fat32::_read_dir(off_t off_begin, off_t off_end)
     /* DIR */
     fd_read(_fd, off_begin, dir_entry);
 
-    u32 cnt = 1 + lfn_entries.size();   /* 必须提取计算好，如果在构造块里计算的话只能得到1
-                                        NewBing表示这是因为，lfn_entries在构造块中计算前已经被销毁，导致size为0 */
-    return {{lfn_entries, dir_entry}, cnt};
+    return {{lfn_entries, dir_entry}, off_begin + dir::ENTRY_SZIE};
 }
 
 /*
@@ -111,14 +107,9 @@ std::vector<dir> fat32::_read_all_dir(u32 clus)
     while (off_begin < off_end)
     {
         auto &&res = _read_dir(off_begin, off_end);
-
-        if (res.second != 0)
-        {
+        off_begin = res.second;
+        if (res.first.valid())
             dirs.emplace_back(res.first);
-            off_begin += res.second * dir::ENTRY_SZIE;
-        }
-        else
-            break;
     }
     return dirs;
 }

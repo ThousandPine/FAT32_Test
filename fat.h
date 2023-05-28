@@ -66,16 +66,14 @@ public:
 private:
     int _fd; /* 分区文件描述符 */
 
-    u32 _byte_per_sec; /* 每个扇区的字节数 */
-    u32 _sec_per_clus; /* 每个簇的扇区数 */
-    u32 _fat_fst_sec;  /* FAT表起始扇区号 */
-    u32 _data_fst_sec; /* 数据区起始扇区号 */
-    u32 _root_fst_sec; /* 根目录起始扇区号 */
+    u32 _byte_per_sec;  /* 每个扇区的字节数 */
+    u32 _sec_per_clus;  /* 每个簇的扇区数 */
+    u32 _fat_fst_sec;   /* FAT表起始扇区号 */
+    u32 _data_fst_sec;  /* 数据区起始扇区号 */
+    u32 _root_fst_sec;  /* 根目录起始扇区号 */
     u32 _root_fst_clus; /* 根目录起始簇号 */
 
     off_t _get_byte_offset(u32 clus);
-    std::pair<dir, u32> _read_dir(off_t begin, off_t end);
+    std::pair<dir, off_t> _read_dir(off_t begin, off_t end);
     std::vector<dir> _read_all_dir(u32 clus);
-
 };
-
