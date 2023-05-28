@@ -9,7 +9,11 @@ using namespace std;
 
 int main()
 {
-    fat32 fat("/dev/sda3");
+    string par;
+    cout << "输入FAT32分区名(例如sda1):";
+    cin >> par;
+
+    fat32 fat("/dev/" + par);
     
     std::cout << fat.to_string() << std::endl;
 
