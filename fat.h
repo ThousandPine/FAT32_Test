@@ -66,12 +66,14 @@ private:
     u32 _root_fst_sec;  /* 根目录起始扇区号 */
     u32 _root_fst_clus; /* 根目录起始簇号 */
 
-    std::string _cur_path;  /* 当前路径字符串 */
-    u32 _cur_clus;          /* 当前目录所在簇号 */
-    std::vector<dir> _dirs; /* 目录下的文件信息 */
+    std::string _cur_path; /* 当前路径字符串 */
+    u32 _cur_clus;         /* 当前目录所在簇号 */
 
     off_t _get_byte_offset(u32 clus);
+    std::vector<dir> _read_dirs(u32 clus);
+    std::vector<dir> _get_cur_dirs();
     std::pair<dir, off_t> _read_dir(off_t begin, off_t end);
-    void _switch_to_dir(u32 clus);
+    void _switch_to_sub_dir(dir &dir);
+    void _switch_to_root();
     bool _open_sub_dir(std::string dir_name);
 };

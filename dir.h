@@ -69,7 +69,7 @@ public:
     bool is_dir();
     bool is_arc();
     u32 clus();
-    std::string name();
+    const std::string &name();
     std::string to_string();
 
 private:

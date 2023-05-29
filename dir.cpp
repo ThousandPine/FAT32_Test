@@ -82,7 +82,7 @@ dir::dir(std::stack<lfn_entry> &lfn_entries, dir_entry &dir_entry)
     }
     while (_short_name.back() == ' ')
         _short_name.pop_back();
-    if(_short_name.back() == '.')
+    if (_short_name.back() == '.')
         _short_name.pop_back();
 
     if (!has_lfn)
@@ -109,7 +109,7 @@ bool dir::is_dir() { return 0 != (_attr & ATTR_DIRECTORY); }
 bool dir::is_arc() { return 0 != (_attr & ATTR_ARCHIVE); }
 
 u32 dir::clus() { return _fst_clus; }
-std::string dir::name() { return _name; }
+const std::string &dir::name() { return _name; }
 
 std::string dir::to_string()
 {
