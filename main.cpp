@@ -7,16 +7,16 @@
 
 using namespace std;
 
-string ascii_to_usc2(const string& s)
-{
-    string res{};
-    for(int i = 0; i < s.size(); i++)
-    {
-        res.push_back(s[i]);
-        res.push_back(0x00);
-    }
-    return res;
-}
+// string ascii_to_usc2(const string& s)
+// {
+//     string res{};
+//     for(int i = 0; i < s.size(); i++)
+//     {
+//         res.push_back(s[i]);
+//         res.push_back(0x00);
+//     }
+//     return res;
+// }
 
 int main()
 {
@@ -43,7 +43,7 @@ int main()
             // res = to_string(cmd.find_first_of(' '));
             // res = cmd.substr(cmd.find_first_of(' ') + 1);
             string path = cmd.substr(1 + cmd.find_first_of(' '));
-            if(false == fat.change_dir(ascii_to_usc2(path)))
+            if(false == fat.change_dir(path))
             {
                 res = "Faild to open path \"" + path + "\"";
             }

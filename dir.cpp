@@ -34,27 +34,18 @@ static u8 lfn_checksum(const u8 *name)
     return sum;
 }
 
-/* ============================================ */
-
-dir::dir()
+/*
+ * 根据LFN条目设置长文件名
+ * 返回条目中的检验和
+ */
+u8 dir::_read_lfn(std::stack<lfn_entry> &lfn_entries)
 {
-    _err = true;
-    _err_msg.append("WARNING::数据为空");
-}
+    u8 checksum = lfn_entries.top().chk_sum;
 
-dir::dir(std::stack<lfn_entry> &lfn_entries, dir_entry &dir_entry)
-{
-    /*
-     * 设置文件名
-     */
-    u8 checksum;
-    bool has_lfn = !lfn_entries.empty();
-    /* LFN */
     _name.clear();
     while (lfn_entries.size())
     {
         auto &lfn = lfn_entries.top();
-        checksum = lfn.chk_sum;
         _name.append((const char *)lfn.name1, 10);
         _name.append((const char *)lfn.name2, 12);
         _name.append((const char *)lfn.name3, 4);
@@ -68,7 +59,29 @@ dir::dir(std::stack<lfn_entry> &lfn_entries, dir_entry &dir_entry)
             break;
         }
     }
-    /* 8.3文件名 */
+#define FORCE_ASCII
+#ifdef FORCE_ASCII
+    /* 
+     * 通过去除空白符的方式
+     * 强制将LFN的USC2字符变为单字节ASCII码
+     */
+    for(int i = 0; i < _name.size();)
+    {
+        if(_name[i] == 0x00)
+            _name.erase(i, 1);
+        else
+            ++i;
+    }
+#endif
+    return checksum;
+}
+
+/*
+ * 根据条目内容设置8.3文件名
+ * 去除多余的空格
+ */
+void dir::_read_short_name(dir_entry &dir_entry)
+{
     _short_name.clear();
     _short_name.append((const char *)dir_entry.name, 11);
     _short_name.insert(8, ".");
@@ -84,16 +97,38 @@ dir::dir(std::stack<lfn_entry> &lfn_entries, dir_entry &dir_entry)
         _short_name.pop_back();
     if (_short_name.back() == '.')
         _short_name.pop_back();
+    return;
+}
 
-    if (!has_lfn)
-        _name = _short_name;
+/* ============================================ */
 
-    /* 文件名检验和 */
-    if (has_lfn && checksum != lfn_checksum(dir_entry.name))
+dir::dir()
+{
+    _err = true;
+    _err_msg.append("WARNING::数据为空");
+}
+
+dir::dir(std::stack<lfn_entry> &lfn_entries, dir_entry &dir_entry)
+{
+    /*
+     * 设置文件名
+     */
+    u8 checksum;
+    /* 8.3文件名 */
+    _read_short_name(dir_entry);
+    /* LFN */
+    if (lfn_entries.size())
     {
-        _err = true;
-        _err_msg.append("WARNING::LFN校验和检测出错");
+        checksum = _read_lfn(lfn_entries);
+        /* 文件名检验和 */
+        if (checksum != lfn_checksum(dir_entry.name))
+        {
+            _err = true;
+            _err_msg.append("WARNING::LFN校验和出错");
+        }
     }
+    else
+        _name = _short_name;
 
     /*
      * 其他参数

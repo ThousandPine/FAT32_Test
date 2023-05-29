@@ -5,8 +5,6 @@
 
 #include "types.h"
 
-#define DIR_ENTRY_SIZE 32
-
 /*
  * 目录条目
  */
@@ -79,4 +77,7 @@ private:
     u32 _fst_clus;
     bool _err = false;
     std::string _err_msg = "";
+
+    u8 _read_lfn(std::stack<lfn_entry> &lfn_entries);
+    void _read_short_name(dir_entry &dir_entry);
 };
